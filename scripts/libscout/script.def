@@ -1,0 +1,9 @@
+[script]
+name=Edan Scout
+type=lib
+
+[files]
+file=EdanScout.lua
+
+[dependencies]
+file=../libbdo/script.def

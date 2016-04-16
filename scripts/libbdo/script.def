@@ -1,0 +1,13 @@
+[script]
+name=BDO Helpers Library
+type=lib
+
+[files]
+file=SkillsHelper.lua
+file=RenderHelper.lua
+file=Pets.lua
+file=Navigator.lua
+file=Main.lua
+file=Helpers.lua
+
+[dependencies]

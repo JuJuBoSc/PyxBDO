@@ -1,0 +1,14 @@
+[script]
+name=[Helper] Pet Feeder
+type=script
+
+[files]
+file=Gui/MainWindow.lua
+file=Bot.lua
+file=Main.lua
+
+[dependencies]
+file=../libtimers/script.def
+file=../libtable/script.def
+file=../libjson/script.def
+file=../libbdo/script.def

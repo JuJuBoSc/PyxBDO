@@ -1,0 +1,13 @@
+[script]
+name=Consumables Library
+type=lib
+
+[files]
+file=Gui/LibConsumableAddWindow.lua
+file=Gui/LibConsumableWindow.lua
+file=../commonstates/v1/Consumables.Lua
+file=LibConsumables.lua
+
+[dependencies]
+file=../libtable/script.def
+file=../libtimers/script.def

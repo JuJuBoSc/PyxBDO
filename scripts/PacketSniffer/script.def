@@ -1,0 +1,9 @@
+[script]
+name=[Dev] Packet Sniffer
+type=script
+
+[files]
+file=main.lua
+
+[dependencies]
+file=../libtable/script.def

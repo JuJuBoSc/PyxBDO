@@ -1,0 +1,8 @@
+[script]
+name=Table Improvements
+type=lib
+
+[files]
+file=table.lua
+
+[dependencies]

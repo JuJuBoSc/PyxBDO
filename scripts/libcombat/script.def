@@ -1,0 +1,12 @@
+[script]
+name=Extensions for combat
+type=lib
+
+[files]
+file=Spell.lua
+file=CombatAssist.lua
+
+
+[dependencies]
+file=../libbdo/script.def
+file=../libtable/script.def

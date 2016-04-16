@@ -1,0 +1,8 @@
+[script]
+name=JSon Library
+type=lib
+
+[files]
+file=json.lua
+
+[dependencies]

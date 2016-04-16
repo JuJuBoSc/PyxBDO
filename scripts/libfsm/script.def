@@ -1,0 +1,8 @@
+[script]
+name=Finite State Machine Library
+type=lib
+
+[files]
+file=fsm.lua
+
+[dependencies]

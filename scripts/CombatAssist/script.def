@@ -1,0 +1,15 @@
+[script]
+name=[Helper] Combat Assist
+type=script
+
+[files]
+file=Data/Settings.lua
+file=Gui/MainWindow.lua
+file=Main.lua
+
+[dependencies]
+file=../libtimers/script.def
+file=../libtable/script.def
+file=../libjson/script.def
+file=../libfsm/script.def
+file=../libbdo/script.def

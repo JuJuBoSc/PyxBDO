@@ -1,0 +1,14 @@
+[script]
+name=[Helper] Consumables
+type=script
+
+[files]
+file=ConsumablesBot.lua
+file=Main.lua
+
+[dependencies]
+file=../libtable/script.def
+file=../libjson/script.def
+file=../libfsm/script.def
+file=../libtimers/script.def
+file=../libconsumables/script.def

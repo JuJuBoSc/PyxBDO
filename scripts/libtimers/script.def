@@ -1,0 +1,9 @@
+[script]
+name=Timer Functions
+type=lib
+
+[files]
+file=PyxTimedList.lua
+file=PyxTimer.lua
+
+[dependencies]
