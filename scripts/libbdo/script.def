@@ -11,3 +11,4 @@ file=Main.lua
 file=Helpers.lua
 
 [dependencies]
+file=../libtable/scripts.def

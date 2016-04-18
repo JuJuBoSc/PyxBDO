@@ -90,7 +90,13 @@ function Bot.Stop()
 end
 
 function Bot.ResetStats()
-
+    Bot.Stats = {
+        Loots = 0,
+        AverageLootTime = 0,
+        LootQuality = {},
+        Relics = 0,
+        Keys = 0,
+    }
 end
 
 function Bot.OnPulse()

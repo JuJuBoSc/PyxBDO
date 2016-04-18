@@ -48,10 +48,11 @@ function Bot.Start()
 
         local combatScriptFile = Bot.Settings.CombatScript
 
-        local combatScriptFunc = loadfile("Combats/" .. combatScriptFile)
+        local code = Pyx.FileSystem.ReadFile("Combats/" .. combatScriptFile)
+        combatScriptFunc,combatScriptError = load(code)
 
-        if not combatScriptFunc then
-            print("Unable to load combat script !")
+        if combatScriptFunc == nil then
+            print(string.format("Unable to load combat script: func %s err %s", tostring(combatScriptFunc), tostring(combatScriptError)))
             return
         end
 
@@ -67,7 +68,6 @@ function Bot.Start()
             return
         end
 
-
         local currentProfile = ProfileEditor.CurrentProfile
 
         if not currentProfile then
@@ -75,15 +75,24 @@ function Bot.Start()
             return
         end
 
-        if table.length(currentProfile:GetHotspots()) < 2 then
+        if Bot.MeshDisabled ~= true and table.length(currentProfile:GetHotspots()) < 2 then
             print("Profile require at least 2 hotspots !")
             return
         end
+
+        if Bot.MeshDisabled == true then
+            Navigator.RealMoveTo = Navigator.MoveTo
+            Navigator.MoveTo = function(p)
+                GetSelfPlayer():MoveTo(p)     
+            end
+            Navigator.RealCanMoveTo = Navigator.CanMoveTo
+            Navigator.CanMoveTo = function(p) return true end
+        end
+
         Bot.WarehouseState:Reset()
         Bot.VendorState:Reset()
         Bot.RepairState:Reset()
         Bot.DeathState:Reset()
-
 
         Bot.WarehouseState.Settings.NpcName = currentProfile.WarehouseNpcName
         Bot.WarehouseState.Settings.NpcPosition = currentProfile.WarehouseNpcPosition
@@ -103,25 +112,38 @@ function Bot.Start()
 
         Bot.LootState.CallWhileMoving = Bot.StateMoving
 
-        ProfileEditor.Visible = false
-        Navigation.MesherEnabled = false
+        if Bot.MeshDisabled ~= true then
+            ProfileEditor.Visible = false
+            Navigation.MesherEnabled = false
+        end
         Navigator.OnStuckCall = Bot.OnStuck
-
 
         Bot.Fsm = FSM()
         Bot.Fsm.ShowOutput = true
-        Bot.Fsm:AddState(Bot.BuildNavigationState)
-        Bot.Fsm:AddState(Bot.DeathState)
-        Bot.Fsm:AddState(LibConsumables.ConsumablesState)
-        Bot.Fsm:AddState(Bot.CombatFightState)
-        Bot.Fsm:AddState(Bot.LootState)
-        Bot.Fsm:AddState(Bot.VendorState)
-        Bot.Fsm:AddState(Bot.WarehouseState)
-        Bot.Fsm:AddState(Bot.RepairState)
-        Bot.Fsm:AddState(Bot.InventoryDeleteState)
-        Bot.Fsm:AddState(Bot.CombatPullState)
-        Bot.Fsm:AddState(RoamingState())
-        Bot.Fsm:AddState(IdleState())
+
+        if Bot.MeshDisabled ~= true then
+            Bot.Fsm:AddState(Bot.BuildNavigationState)
+            Bot.Fsm:AddState(Bot.DeathState)
+            Bot.Fsm:AddState(LibConsumables.ConsumablesState)
+            Bot.Fsm:AddState(Bot.CombatFightState)
+            Bot.Fsm:AddState(Bot.LootState)
+            Bot.Fsm:AddState(Bot.VendorState)
+            Bot.Fsm:AddState(Bot.WarehouseState)
+            Bot.Fsm:AddState(Bot.RepairState)
+            Bot.Fsm:AddState(Bot.InventoryDeleteState)
+            Bot.Fsm:AddState(Bot.CombatPullState)
+            Bot.Fsm:AddState(RoamingState())
+            Bot.Fsm:AddState(IdleState())
+        else
+            Bot.Fsm:AddState(Bot.DeathState)
+            Bot.Fsm:AddState(PlayerPressState())
+            Bot.Fsm:AddState(LibConsumables.ConsumablesState)
+            Bot.Fsm:AddState(Bot.CombatFightState)
+            Bot.Fsm:AddState(Bot.LootState)
+            Bot.Fsm:AddState(Bot.InventoryDeleteState)
+            Bot.Fsm:AddState(Bot.CombatPullState)
+            Bot.Fsm:AddState(IdleState())
+        end
 
         Bot.Running = true
     end
@@ -136,6 +158,14 @@ end
 function Bot.Stop()
     Navigator.Stop()
     Bot.Running = false
+
+    if Navigator.RealMoveTo ~= nil then
+        Navigator.MoveTo = Navigator.RealMoveTo
+        Navigator.RealMoveTo = nil
+
+        Navigator.CanMoveTo = Navigator.RealCanMoveTo
+        Navigator.RealCanMoveTo = nil
+    end
 end
 
 function Bot.ResetStats()
@@ -143,12 +173,47 @@ function Bot.ResetStats()
 end
 
 function Bot.OnPulse()
+
+    if Pyx.Input.IsGameForeground() then
+        -- pause to start or stop bot
+        if Pyx.Input.IsKeyDown(0x12) and Pyx.Input.IsKeyDown(string.byte('S')) then
+            if Bot._startHotKeyPressed ~= true then
+                Bot._startHotKeyPressed = true
+                if Bot.Running then
+                    print("stopping bot from hotkey")
+                    Bot.Stop()
+                else
+                    print("starting bot from hotkey")
+                    Bot.Start()
+                end
+            end
+        else
+            Bot._startHotKeyPressed = false
+        end
+
+        -- alt+F hotspot adding
+        if Pyx.Input.IsKeyDown(0x12) and Pyx.Input.IsKeyDown(string.byte('F')) then
+            if Bot._addHotKeyPressed ~= true then
+                Bot._addHotKeyPressed = true
+                print("Adding hotspot through hotkey")
+                local selfPlayer = GetSelfPlayer()
+                if selfPlayer then
+                    local selfPlayerPosition = selfPlayer.Position
+                    table.insert(ProfileEditor.CurrentProfile.Hotspots, { X = selfPlayerPosition.X, Y = selfPlayerPosition.Y, Z = selfPlayerPosition.Z })
+                end
+            end
+        else
+            Bot._addHotKeyPressed = false
+        end
+    end
+
     if Bot.Running then
         Bot.Fsm:Pulse()
+
         if Bot.VendorState.Forced == true or Bot.RepairState.Forced == true or Bot.WarehouseState.Forced == true then
-        Bot.CombatPullState.Enabled = false
+            Bot.CombatPullState.Enabled = false
         else
-        Bot.CombatPullState.Enabled = true
+            Bot.CombatPullState.Enabled = true
         end
     end
 end

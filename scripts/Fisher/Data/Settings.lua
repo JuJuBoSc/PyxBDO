@@ -35,6 +35,13 @@ function Settings.new()
     self.StartFishingSettings = {}
     self.HookFishHandleGameSettings = {}
     
+    self.LootWhite = true
+    self.LootGreen = true
+    self.LootBlue = true
+    self.LootKey = true
+    self.LootRelic = true
+    self.LootAndDeleteUnwantedFish = false
+
   return self
 end
 

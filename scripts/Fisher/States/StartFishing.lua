@@ -55,9 +55,9 @@ function StartFishingState:Run()
     selfPlayer:DoAction("FISHING_START")
     selfPlayer:DoAction("FISHING_ING_START")
     if self.Settings.MaxEnergyCheat == true then
-    selfPlayer:DoAction("FISHING_START_END_Lv10")
+        selfPlayer:DoAction("FISHING_START_END_Lv10")
     else
-    selfPlayer:DoAction("FISHING_START_END_Lv0")
+        selfPlayer:DoAction("FISHING_START_END_Lv0")
     end
     self.LastStartFishTickcount = Pyx.System.TickCount
 end
