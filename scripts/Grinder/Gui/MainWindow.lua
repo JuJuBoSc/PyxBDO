@@ -78,6 +78,16 @@ function MainWindow.DrawMainWindow()
                 LibConsumableWindow.Visible = true
             end
 
+            ImGui.SameLine()
+            if Bot.MeshDisabled then
+                if ImGui.Button("Mesh Disabled##btn_mesh_off", ImVec2(ImGui.GetContentRegionAvailWidth(), 20)) then
+                    Bot.MeshDisabled = false
+                end
+            else
+                if ImGui.Button("Mesh Enabled##btn_mesh_on", ImVec2(ImGui.GetContentRegionAvailWidth(), 20)) then
+                    Bot.MeshDisabled = true
+                end
+            end
         end
 
         if ImGui.CollapsingHeader("Combat", "id_gui_combats", true, false) then

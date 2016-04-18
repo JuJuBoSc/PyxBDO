@@ -78,6 +78,12 @@ function MainWindow.DrawMainWindow()
 
         if ImGui.CollapsingHeader("Looting", "id_gui_looting", true, false) then
             _, Bot.Settings.IgnoreUntradeAbleItems = ImGui.Checkbox("Ignore untradeable items##id_guid_looting_ignore_untradeable", Bot.Settings.IgnoreUntradeAbleItems)
+            _, Bot.Settings.LootWhite = ImGui.Checkbox("Loot whites##id_guid_loot_white", Bot.Settings.LootWhite)
+            _, Bot.Settings.LootGreen = ImGui.Checkbox("Loot greens##id_guid_loot_green", Bot.Settings.LootGreen)
+            _, Bot.Settings.LootBlue = ImGui.Checkbox("Loot blues##id_guid_loot_blue", Bot.Settings.LootBlue)
+            _, Bot.Settings.LootKey = ImGui.Checkbox("Loot keys##id_guid_loot_key", Bot.Settings.LootKey)
+            _, Bot.Settings.LootRelic = ImGui.Checkbox("Loot shards##id_guid_loot_relic", Bot.Settings.LootRelic)
+            _, Bot.Settings.LootAndDeleteUnwantedFish = ImGui.Checkbox("Loot and delete unwanted fish##id_guid_loot_and_delete_unwanted_fish", Bot.Settings.LootAndDeleteUnwantedFish)
         end
         MainWindow.UpdateInventoryList()
         if ImGui.CollapsingHeader("Inventory Management", "id_gui_inv_manage", true, false) then
@@ -221,11 +227,34 @@ function MainWindow.DrawMainWindow()
 
         end
         if ImGui.CollapsingHeader("Cheats", "id_gui_fish_cheats", true, false) then
-        _, Bot.Settings.TradeManagerSettings.DoTradeGame = ImGui.Checkbox("Play/Win Trade game##id_guid_trademanager_do_game", Bot.Settings.TradeManagerSettings.DoTradeGame)
-        _, Bot.Settings.HookFishHandleGameSettings.InstantFish = ImGui.Checkbox("Fast Fish game##id_guid_fish_fast_game", Bot.Settings.HookFishHandleGameSettings.InstantFish)
-        _, Bot.Settings.StartFishingSettings.MaxEnergyCheat = ImGui.Checkbox("Max Energy Cast (uses no energy)##id_guid_hook_fast_game", Bot.Settings.StartFishingSettings.MaxEnergyCheat)
+            _, Bot.Settings.TradeManagerSettings.DoTradeGame = ImGui.Checkbox("Play/Win Trade game##id_guid_trademanager_do_game", Bot.Settings.TradeManagerSettings.DoTradeGame)
+            _, Bot.Settings.HookFishHandleGameSettings.InstantFish = ImGui.Checkbox("Fast Fish game##id_guid_fish_fast_game", Bot.Settings.HookFishHandleGameSettings.InstantFish)
+            _, Bot.Settings.StartFishingSettings.MaxEnergyCheat = ImGui.Checkbox("Max Energy Cast (uses no energy)##id_guid_hook_fast_game", Bot.Settings.StartFishingSettings.MaxEnergyCheat)
+        end
 
-end
+        if ImGui.CollapsingHeader("Stats","id_gui_stats", true, false) then
+            if ImGui.Button("Reset Stats##id_guid_reset_stats", ImVec2(ImGui.GetContentRegionAvailWidth(), 20)) then
+                Bot.ResetStats()
+            end
+
+            local statLog = ""
+
+            statLog = statLog .. string.format("Loots: %i\n", Bot.Stats.Loots)
+            statLog = statLog .. string.format("Loot Time: %.02f\n", Bot.Stats.AverageLootTime)
+
+            if Bot.Stats.Loots > 0 then
+                statLog = statLog .. string.format("Whites: %i - %.02f%%\n", Bot.Stats.LootQuality[0] or 0, (Bot.Stats.LootQuality[0] or 0) / Bot.Stats.Loots * 100)
+                statLog = statLog .. string.format("Greens: %i - %.02f%%\n", Bot.Stats.LootQuality[1] or 0, (Bot.Stats.LootQuality[1] or 0) / Bot.Stats.Loots * 100)
+                statLog = statLog .. string.format("Blues: %i - %.02f%%\n", Bot.Stats.LootQuality[2] or 0, (Bot.Stats.LootQuality[2] or 0) / Bot.Stats.Loots * 100)
+                statLog = statLog .. string.format("Yellows: %i - %.02f%%\n", Bot.Stats.LootQuality[3] or 0, (Bot.Stats.LootQuality[3] or 0) / Bot.Stats.Loots * 100)
+                statLog = statLog .. string.format("Oranges: %i - %.02f%%\n", Bot.Stats.LootQuality[4] or 0, (Bot.Stats.LootQuality[4] or 0) / Bot.Stats.Loots * 100)
+                statLog = statLog .. string.format("Keys: %i - %.02f%%\n", Bot.Stats.Keys, Bot.Stats.Keys / Bot.Stats.Loots * 100)
+                statLog = statLog .. string.format("Relics: %i - %.02f%%\n", Bot.Stats.Relics, Bot.Stats.Relics / Bot.Stats.Loots * 100)
+            end
+
+            local conSize = ImGui.GetContentRegionAvail()
+            ImGui.InputTextMultiline("stat_log", statLog, 1024000, ImVec2(conSize.x, 15 * 9), ImGuiInputTextFlags_AutoSelectAll|ImGuiInputTextFlags_ReadOnly)
+        end
         ImGui.End()
     end
 end

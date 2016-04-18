@@ -1,8 +1,8 @@
 EdanScout = {}
 EdanScout.FrontDegrees = 90
-EdanScout.MeleeRange = 50
+EdanScout.MeleeRange = 150
 EdanScout.MidRange = 800
-EdanScout.MaxRange = 1200
+EdanScout.MaxRange = 1400
 
 -- call this right before use
 function EdanScout.Update()
@@ -40,12 +40,11 @@ function EdanScout.Update()
 			end
 		end
 
-		local distance = v.Position.Distance2DFromMe - v.BodySize - selfPlayer.BodySize
-		if v.BodySize > 150 then
-			distance = distance - 150
-		end
+		
+		local meleeRange = (v.Position.Distance2DFromMe - v.BodySize - selfPlayer.BodySize < EdanScout.MeleeRange) and EdanScout.Melee2DHeightCheck(selfPlayer, v)
+		local distance = v.Position.Distance3DFromMe - v.BodySize - selfPlayer.BodySize
     	
-    	if distance < EdanScout.MeleeRange then
+    	if meleeRange then
     		EdanScout.MonstersInMeleeRange = EdanScout.MonstersInMeleeRange + 1
 		elseif distance < EdanScout.MidRange then
 			EdanScout.MonstersInMidRange = EdanScout.MonstersInMidRange + 1
@@ -53,7 +52,21 @@ function EdanScout.Update()
 	end
 end
 
+-- Assuming position is at the bottom of each model. This only works on monsters right next to you with 2d calculations. Might be able to add some extra distance to this.
+-- if we are below them, then player height is the max
+-- if we are above them, then target height is the max
+function EdanScout.Melee2DHeightCheck(player, target)
+	local ydiff = player.Position.Y - target.Position.Y
+	if ydiff < 0 then
+		return -ydiff <= player.BodyHeight
+	else
+		return ydiff <= target.BodyHeight
+	end
+end
+
 -- table.sort(monsters, function(a,b) return a.Position:GetDistance3D(selfPlayerPosition) < b.Position:GetDistance3D(selfPlayerPosition) end)
+
+-- rotation starts from 0 at south and increases clockwise to 2 pi
 
 -- is this coordinate in front of me?
 function EdanScout.InFrontOfMe(vector)
@@ -94,16 +107,49 @@ function EdanScout.InFront(originVector, originRotation, fieldOfViewDegrees, tar
 	end	
 end
 
+-- returns a unit vector given a rotation
+function EdanScout.RotationVector(radians)
+	local fixedRotation = math.pi * 2 - EdanScout.WrapFloat(radians - math.pi / 2, math.pi * 2)
+	return -math.cos(fixedRotation), -math.sin(fixedRotation)
+end
+
+-- returns a position given the starting position, rotation, and optional length
+function EdanScout.RotationPosition(originVector, rotationRadians, length)
+	if length == nil then
+		length = 1
+	end
+	local dx,dz = EdanScout.RotationVector(rotationRadians)
+	return Vector3(originVector.X + dx * length, originVector.Y, originVector.Z + dz * length)
+end
+
+function EdanScout.MyForwardPosition(length)
+	local player = GetSelfPlayer()
+	return EdanScout.RotationPosition(player.Position, player.Rotation, length)
+end
+
+function EdanScout.MyLeftPosition(length)
+	local player = GetSelfPlayer()
+	return EdanScout.RotationPosition(player.Position, player.Rotation - math.pi / 2, length)
+end
+
+function EdanScout.MyRightPosition(length)
+	local player = GetSelfPlayer()
+	return EdanScout.RotationPosition(player.Position, player.Rotation + math.pi / 2, length)
+end
+
+function EdanScout.MyBackPosition(length)
+	local player = GetSelfPlayer()
+	return EdanScout.RotationPosition(player.Position, player.Rotation - math.pi, length)
+end
+
 -- utilities
 
--- binds f between 0 and max. WARNING, absolute value of f cannot be bigger than max
-function EdanScout.WrapFloat(f, max)
-	if f < 0 then
-		return max + f
-	elseif f > max then
-		return f - max
+-- wraps value between 0 and max
+function EdanScout.WrapFloat(value, max)
+	if value < 0 then
+		return max + math.fmod(value, max)
 	else
-		return f
+		return math.fmod(value, max)
 	end
 end
 
@@ -123,8 +169,6 @@ function EdanScout.Atan2bdo(y, x)
 	return math.pi * 2 - EdanScout.WrapFloat(output + math.pi / 2, math.pi * 2)
 end
 
--- returns a unit vector given a rotation
-function EdanScout.InverseAtan(radians)
-	local fixedRotation = math.pi * 2 - WrapFloat(radians - math.pi / 2, math.pi * 2)
-	return -math.cos(fixedRotation), -math.sin(fixedRotation)
-end
+-- deprecated names
+
+EdanScout.InverseAtan = EdanScout.RotationVector
